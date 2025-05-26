@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -34,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -45,6 +42,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.core.graphics.toColorInt
 import data.colorMap
+import data.defaultColor
 
 @Composable
 fun DynamicColorThemeScreen() {
@@ -52,28 +50,28 @@ fun DynamicColorThemeScreen() {
     var showPopup by remember { mutableStateOf(false) }
 
     val parsedColor = remember(colorInput.text) {
-        when {
-            colorMap.keys.any {
-                it.equals(
-                    colorInput.text.trim(),
-                    ignoreCase = true
-                )
-            } -> colorMap[colorInput.text.trim()]!!
+        val input = colorInput.text.trim()
 
-            Regex("^#[0-9a-fA-F]{6}$").matches(colorInput.text.trim()) -> {
+        val matchedColor = colorMap.entries
+            .firstOrNull { it.key.equals(input, ignoreCase = true) }
+            ?.value
+
+        when {
+            matchedColor != null -> matchedColor
+            Regex("^#[0-9a-fA-F]{6}$").matches(input) -> {
                 try {
-                    Color(colorInput.text.trim().toColorInt())
+                    Color(input.toColorInt())
                 } catch (e: Exception) {
-                    Color.White
+                    defaultColor
                 }
             }
-
-            else -> Color.White
+            else -> defaultColor
         }
     }
 
+
     val animatedBackground by animateColorAsState(
-        targetValue = parsedColor,
+        targetValue = parsedColor!!,
         label = "BackgroundColor",
         animationSpec = tween(durationMillis = 1000)
     )
@@ -85,7 +83,7 @@ fun DynamicColorThemeScreen() {
     ) {
         Text(
             text = "Dynamic color theme",
-            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.W600),
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.W600),
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 24.dp),
@@ -157,7 +155,8 @@ fun DynamicColorThemeScreen() {
                                 Text(
                                     text = name,
                                     fontSize = 14.sp,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                                 Box(
                                     modifier = Modifier
