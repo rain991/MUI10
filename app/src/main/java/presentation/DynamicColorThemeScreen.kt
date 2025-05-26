@@ -1,59 +1,65 @@
 package presentation
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.IntOffset
 import androidx.core.graphics.toColorInt
+import data.colorMap
 
 @Composable
 fun DynamicColorThemeScreen() {
     var colorInput by remember { mutableStateOf(TextFieldValue("")) }
     var showPopup by remember { mutableStateOf(false) }
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-
-    val colorMap = remember {
-        mapOf(
-            "Red" to Color.Red, "Pink" to Color(0xFFFFC0CB), "Cyan" to Color.Cyan,
-            "Blue" to Color.Blue, "Green" to Color.Green, "Yellow" to Color.Yellow,
-            "Gray" to Color.Gray, "Magenta" to Color.Magenta, "Orange" to Color(0xFFFFA500),
-            "Purple" to Color(0xFF800080), "Brown" to Color(0xFFA52A2A), "Maroon" to Color(0xFF800000),
-            "Olive" to Color(0xFF808000), "Teal" to Color(0xFF008080), "Navy" to Color(0xFF000080),
-            "Lime" to Color(0xFF00FF00), "Indigo" to Color(0xFF4B0082), "Gold" to Color(0xFFFFD700),
-            "Beige" to Color(0xFFF5F5DC), "Ivory" to Color(0xFFFFFFF0), "Coral" to Color(0xFFFF7F50),
-            "Salmon" to Color(0xFFFA8072), "Khaki" to Color(0xFFF0E68C), "Lavender" to Color(0xFFE6E6FA),
-            "Mint" to Color(0xFF98FF98), "Turquoise" to Color(0xFF40E0D0), "Azure" to Color(0xFF007FFF),
-            "Crimson" to Color(0xFFDC143C), "Plum" to Color(0xFFDDA0DD), "Slate" to Color(0xFF708090)
-        )
-    }
 
     val parsedColor = remember(colorInput.text) {
         when {
-            colorMap.containsKey(colorInput.text.trim()) -> colorMap[colorInput.text.trim()]!!
+            colorMap.keys.any {
+                it.equals(
+                    colorInput.text.trim(),
+                    ignoreCase = true
+                )
+            } -> colorMap[colorInput.text.trim()]!!
+
             Regex("^#[0-9a-fA-F]{6}$").matches(colorInput.text.trim()) -> {
                 try {
                     Color(colorInput.text.trim().toColorInt())
@@ -61,11 +67,16 @@ fun DynamicColorThemeScreen() {
                     Color.White
                 }
             }
+
             else -> Color.White
         }
     }
 
-    val animatedBackground by animateColorAsState(targetValue = parsedColor, label = "BackgroundColor")
+    val animatedBackground by animateColorAsState(
+        targetValue = parsedColor,
+        label = "BackgroundColor",
+        animationSpec = tween(durationMillis = 1000)
+    )
 
     Box(
         modifier = Modifier
@@ -105,6 +116,7 @@ fun DynamicColorThemeScreen() {
                 value = colorInput,
                 onValueChange = { colorInput = it },
                 singleLine = true,
+
                 modifier = Modifier.fillMaxWidth(0.75f),
                 textStyle = LocalTextStyle.current.copy(fontSize = 18.sp)
             )
@@ -114,32 +126,48 @@ fun DynamicColorThemeScreen() {
             Popup(
                 alignment = Alignment.TopEnd,
                 offset = IntOffset(x = -32, y = 72),
-                properties = PopupProperties(focusable = true, dismissOnBackPress = true, dismissOnClickOutside = true),
+                properties = PopupProperties(
+                    focusable = true,
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = true
+                ),
                 onDismissRequest = { showPopup = false }
             ) {
                 Box(
                     modifier = Modifier
-                        .width(screenWidth * 0.3f)
-                        .height(screenHeight * 3f)
+                        .fillMaxWidth(0.3f)
+                        .fillMaxHeight(0.3f)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color.White)
                         .verticalScroll(rememberScrollState())
                         .padding(8.dp)
                 ) {
                     Column {
-                        colorMap.keys.sorted().forEach { name ->
-                            Text(
-                                text = name,
+                        colorMap.entries.sortedBy { it.key }.forEach { (name, color) ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
                                         colorInput = TextFieldValue(name)
                                         showPopup = false
                                     }
-                                    .padding(6.dp),
-                                fontSize = 14.sp
-                            )
+                                    .padding(6.dp)
+                            ) {
+                                Text(
+                                    text = name,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(12.dp)
+                                        .clip(RoundedCornerShape(50))
+                                        .background(color)
+                                )
+                            }
                         }
+
                     }
                 }
             }
