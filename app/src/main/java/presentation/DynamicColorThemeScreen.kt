@@ -43,10 +43,11 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.core.graphics.toColorInt
 import data.colorMap
 import data.defaultColor
+import data.defaultColorName
 
 @Composable
 fun DynamicColorThemeScreen() {
-    var colorInput by remember { mutableStateOf(TextFieldValue("")) }
+    var colorInput by remember { mutableStateOf(TextFieldValue(defaultColorName)) }
     var showPopup by remember { mutableStateOf(false) }
 
     val parsedColor = remember(colorInput.text) {
@@ -156,7 +157,7 @@ fun DynamicColorThemeScreen() {
                                     text = name,
                                     fontSize = 14.sp,
                                     modifier = Modifier.weight(1f),
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    color = MaterialTheme.colorScheme.onPrimary
                                 )
                                 Box(
                                     modifier = Modifier

@@ -1,3 +1,4 @@
 package data
 
-val defaultColor = colorMap["Salmon"]
+const val defaultColorName = "Salmon"
+val defaultColor = colorMap[defaultColorName]
