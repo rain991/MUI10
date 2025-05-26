@@ -1,4 +1,4 @@
-package com.example.mui10.ui.theme
+package presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
