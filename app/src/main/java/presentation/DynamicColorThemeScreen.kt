@@ -157,7 +157,7 @@ fun DynamicColorThemeScreen() {
                                     text = name,
                                     fontSize = 14.sp,
                                     modifier = Modifier.weight(1f),
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                    color = Color.DarkGray
                                 )
                                 Box(
                                     modifier = Modifier
